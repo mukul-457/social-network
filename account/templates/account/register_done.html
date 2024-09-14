@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Welcome page{% endblock  %}
+{% block content %}
+<h1> Resitration done </h1>
+<p> Welcome {{ new_user.username }}. You have been successfully registered with us </p>
+<p> You can now <a href={% url "login" %}>log in </a> </p>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock  %}
+{% block content %}
+<h1> Edit your profile </h1>
+<p> Use bleow form to edit you profile </p>
+<form method="post" enctype="multipart/form-data">
+    {{ user_form.as_p }}
+    {{ profile_form.as_p }}
+    <input type="submit" value="Submit">
+    {% csrf_token %}
+</form>
+{% endblock  %}

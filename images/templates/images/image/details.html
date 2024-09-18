@@ -2,13 +2,25 @@
 {% block title %}{{ image.title }}{% endblock  %}
 {% block content %}
 <h1> {{ image.title }} </h1>
-<img src="{{ image.image.url }}" class ="image-detail">
-{% with total_likes=image.liked_by_users.count %}
+{% load thumbnail %}
+<a href="{{ image.image.url }}">
+    <img src="{% thumbnail image.image 300x0 %}" class ="image-detail">
+</a>
+{% with total_likes=image.liked_by_users.count  liked_by=image.liked_by_users.all %}
 <div class="image-info">
     <div>
         <span class = "count" >
-            {{ total_likes }} like{{ total_likes|pluralize }}
+            <span class="total"> {{ total_likes }} </span>
+             like{{ total_likes|pluralize }}
         </span>
+        <a href="#" data-id="{{ image.id }}" data-action= "{% if request.user in liked_by %}un{% endif %}like" class="like button">
+            {% if request.user in  liked_by %}
+            Unlike
+            {% else %}
+            Like
+            {% endif %}
+        </a>
+
     </div>
     {{ image.description|linebreaks }}
 </div>
@@ -25,4 +37,33 @@
     {% endfor %}
 </div>
 {% endwith %}
+{% endblock  %}
+
+{% block domready %}
+const url = "{% url "images:like" %}";
+var options = {
+    method: 'POST',
+    headers : {'X-CSRFToken': csrftoken},
+    mode: 'same-origin'
+}
+document.querySelector('a.like').addEventListener('click', function(e){
+    e.preventDefault();
+    var likeButton = this;
+    var formData = new FormData();
+    formData.append('id', likeButton.dataset.id);
+    formData.append('action', likeButton.dataset.action);
+    options['body'] = formData;
+    fetch(url , options).then(response => response.json())
+    .then(data => {
+        if(data['status'] === "ok"){
+            var previousAction = likeButton.dataset.action;
+            var action = previousAction === 'like'?'unlike':'like';
+            likeButton.dataset.action = action;
+            likeButton.innerHTML = action
+            var likeCount = document.querySelector('span.count .total');
+            var totalLikes = parseInt(likeCount.innerHTML);
+            likeCount.innerHTML = previousAction === "like" ? totalLikes +1 :totalLikes-1;
+        }
+    })
+});
 {% endblock  %}
